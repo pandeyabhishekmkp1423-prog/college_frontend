@@ -88,20 +88,23 @@ export default function Navbar() {
                 <MegaMenu label="Academics">
                   <div className="grid grid-cols-5 gap-8 p-8 text-sm">
                     <Column title="Undergraduate">
-                      <Item>B.Tech Civil Engineering</Item>
-                      <Item>B.Tech Computer Science</Item>
-                      <Item>B.Tech Electrical</Item>
-                      <Item>B.Tech Electronics</Item>
-                      <Item>B.Tech Mechanical</Item>
+                   <Item to="/courses/civil-engineering">Civil Engineering</Item>                      
+                   <Item to="/courses/cse">Computer Science & Engineering</Item>
+                      <Item to="/courses/electrical-engineering">Electrical Engineering</Item>
+                      <Item to="/courses/electronics-communication">Electronics & Communication Engineering</Item>
+                      <Item to="/courses/information-technology">Information Technology</Item>
+                      <Item to="/courses/mechanical-engineering">Mechanical Engineering</Item>
                     </Column>
                     <Column title="Applied Sciences">
-                      <Item>Applied Sciences & Humanities</Item>
+                      <Item to="/applied-sciences-humanities">
+                        Applied Sciences & Humanities
+                       </Item>
                       <Item className="font-semibold text-[#b11217]">
                         Academic Calendar
                       </Item>
                     </Column>
                     <Column title="Postgraduate">
-                      <Item>MBA</Item>
+                      <Item to="/mba">MBA</Item>
                     </Column>
                     <Column title="Policies">
                       <Item>Anti Ragging</Item>
@@ -186,7 +189,9 @@ export default function Navbar() {
           <DrawerSection title="Additional Links">
             <DrawerLink to="/facilities">Facilities</DrawerLink>
             <DrawerLink to="/happenings">Institute's Happenings</DrawerLink>
-            <DrawerLink to="/alumni">Online Alumni Registration</DrawerLink>
+            <DrawerLink to="/alumni-register-form">
+              Online Alumni Registration
+            </DrawerLink>
             <DrawerLink to="/career">Career@RRSIMT Online Form</DrawerLink>
             <DrawerLink to="/grievance">Grievance Redressal</DrawerLink>
             <DrawerLink to="/media">Media Coverage</DrawerLink>

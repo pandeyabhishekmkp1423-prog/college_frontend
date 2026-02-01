@@ -9,7 +9,20 @@ import Gallery from "./pages/Gallery";
 import Login from "./pages/Login";
 import Enquiry from "./pages/Enquiry";
 import Contact from "./pages/Contact";
+
+/* ========= FORM PAGES (LANDING PAGES) ========= */
 import Admission from "./pages/Admission";
+import AlumniRegister from "./pages/AlumniRegister";
+import Career from "./pages/Career";
+import Grievance from "./pages/Grievance";
+import AppliedSciences from "./pages/AppliedSciences";
+import MBA from "./pages/MBA";
+import CivilEngineering from "./pages/CivilEngineering";
+import CSE from "./pages/CSE";
+import ElectricalEngineering from "./pages/ElectricalEngineering";
+import ElectronicsCommunication from "./pages/ElectronicsCommunication";
+import InformationTechnology from "./pages/InformationTechnology";
+import MechanicalEngineering from "./pages/MechanicalEngineering";
 
 /* ========= ADMIN PAGES ========= */
 import AdminLogin from "./pages/Admin/AdminLogin";
@@ -23,7 +36,7 @@ export default function App() {
   return (
     <BrowserRouter>
 
-      {/* 🌫️ GLOBAL AMBIENT BACKGROUND (CLEAN & NOT OVER-BLURRED) */}
+      {/* 🌫️ GLOBAL AMBIENT BACKGROUND */}
       <div
         className="fixed inset-0 -z-10"
         style={{
@@ -31,9 +44,9 @@ export default function App() {
             "url('https://images.unsplash.com/photo-1576495199011-eb94736d05d6?q=80&w=1172&auto=format&fit=crop')",
           backgroundSize: "cover",
           backgroundPosition: "center",
-          filter: "blur(2px)",     // 👈 reduced blur
+          filter: "blur(2px)",
           transform: "scale(1.03)",
-          opacity: 0.45,           // 👈 clearer image
+          opacity: 0.45,
         }}
       />
 
@@ -46,9 +59,25 @@ export default function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/enquiry" element={<Enquiry />} />
         <Route path="/contact" element={<Contact />} />
-        <Route path="/admission" element={<Admission />} />
 
-        {/* ===== ADMIN ROUTES (LOCAL ONLY) ===== */}
+
+        {/* ===== FORM LANDING PAGES ===== */}
+        <Route path="/admission" element={<Admission />} />
+        <Route path="/alumni-register-form" element={<AlumniRegister />} />
+        <Route path="/career" element={<Career />} />
+        <Route path="/grievance" element={<Grievance />} />
+        <Route path="/applied-sciences-humanities"element={<AppliedSciences />}/>
+        <Route path="/mba" element={<MBA />} />
+        <Route path="/courses/civil-engineering"element={<CivilEngineering />}/>
+        <Route path="/courses/cse" element={<CSE />} />
+        <Route path="/courses/electrical-engineering"element={<ElectricalEngineering />}/>
+        <Route path="/courses/electronics-communication"element={<ElectronicsCommunication />}/>
+        <Route path="/courses/information-technology"element={<InformationTechnology />}/>
+        <Route path="/courses/mechanical-engineering"element={<MechanicalEngineering />}/>
+
+
+
+        {/* ===== ADMIN ROUTES (DEV ONLY) ===== */}
         {!import.meta.env.PROD && (
           <>
             <Route path="/admin/login" element={<AdminLogin />} />
