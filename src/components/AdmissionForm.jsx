@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
+import useCaptcha from "../hooks/useCaptcha";
 
 /* =====================================================
    ADMISSION FORM – BORDER HIGHLIGHTED ONLY
@@ -8,9 +9,34 @@ import Footer from "./Footer";
 
 export default function AdmissionForm() {
   const [formData, setFormData] = useState({});
+  const [captchaInput, setCaptchaInput] = useState("");
+  const [captchaError, setCaptchaError] = useState("");
+
+  const {
+    captchaQuestion,
+    validateCaptcha,
+    regenerateCaptcha,
+  } = useCaptcha();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    if (!validateCaptcha(captchaInput)) {
+      setCaptchaError("Invalid CAPTCHA. Please try again.");
+      regenerateCaptcha();
+      setCaptchaInput("");
+      return;
+    }
+
+    setCaptchaError("");
+    alert("Form submitted successfully (frontend only)");
+
+    regenerateCaptcha();
+    setCaptchaInput("");
   };
 
   return (
@@ -33,11 +59,14 @@ export default function AdmissionForm() {
           </div>
 
           {/* FORM CARD */}
-          <form className="
-            bg-white rounded-xl shadow-xl
-            border-2 border-[#b11217]/50
-            overflow-hidden
-          ">
+          <form
+            onSubmit={handleSubmit}
+            className="
+              bg-white rounded-xl shadow-xl
+              border-2 border-[#b11217]/50
+              overflow-hidden
+            "
+          >
 
             {/* COURSE SELECTION */}
             <FormSection title="Course Selection">
@@ -155,21 +184,39 @@ export default function AdmissionForm() {
               />
             </FormSection>
 
-            {/* CAPTCHA */}
+            {/* CAPTCHA (UI UNCHANGED) */}
             <FormSection title="Verification">
-              <div className="
-                border-2 border-dashed border-[#b11217]/60
-                rounded-md p-4 text-center text-slate-600 bg-slate-50
-              ">
-                CAPTCHA will be added here
+              <div
+                className="
+                  border-2 border-dashed border-[#b11217]/60
+                  rounded-md p-4 text-center text-slate-600 bg-slate-50
+                "
+              >
+                <div className="font-semibold mb-2 text-[#b11217]">
+                  {captchaQuestion}
+                </div>
+
+                <input
+                  type="text"
+                  value={captchaInput}
+                  onChange={(e) => setCaptchaInput(e.target.value)}
+                  placeholder="Enter answer"
+                  className="input text-center max-w-xs mx-auto"
+                />
+
+                {captchaError && (
+                  <p className="text-red-600 text-sm mt-2">
+                    {captchaError}
+                  </p>
+                )}
               </div>
             </FormSection>
 
             {/* SUBMIT */}
             <div className="bg-slate-50 px-6 py-6 border-t-2 border-[#b11217]/30">
               <button
-                disabled
-                className="w-full bg-[#b11217] text-white py-3 rounded-md font-semibold opacity-70 cursor-not-allowed"
+                type="submit"
+                className="w-full bg-[#b11217] text-white py-3 rounded-md font-semibold"
               >
                 Submit Admission Enquiry
               </button>
@@ -236,7 +283,7 @@ function AcademicTable() {
           {rows.map((r) => (
             <tr key={r}>
               <td className="border p-2 font-medium">{r}</td>
-              {[1,2,3,4].map(i => (
+              {[1, 2, 3, 4].map((i) => (
                 <td key={i} className="border p-2">
                   <input className="w-full border border-slate-400 rounded px-2 py-1" />
                 </td>
