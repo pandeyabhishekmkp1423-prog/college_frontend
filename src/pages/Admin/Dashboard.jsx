@@ -1,21 +1,31 @@
 import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../../services/api";
-import { LogOut, Users, BookOpen, Bell } from "lucide-react";
+import {
+  FileText,
+  GraduationCap,
+  Briefcase,
+  AlertTriangle,
+  Bell,
+  BookOpen,
+} from "lucide-react";
 
 /* =========================
-   SAFE FALLBACK
+   INITIAL STATE
 ========================= */
 const INITIAL_DASHBOARD = {
   stats: {
-    totalUsers: 0,
-    totalNotices: 0,
-    totalCourses: 0,
+    admissions: 0,
+    alumni: 0,
+    careers: 0,
+    grievances: 0,
+    notices: 0,
+    courses: 0,
   },
   recent: {
-    enquiries: [],
-    notices: [],
-    courses: [],
+    admissions: [],
+    alumni: [],
+    grievances: [],
   },
 };
 
@@ -26,44 +36,41 @@ export default function Dashboard() {
   const navigate = useNavigate();
 
   /* =========================
-     LOGOUT
+     AUTH FAIL HANDLER
   ========================= */
-  const handleLogout = useCallback(() => {
+  const handleAuthFail = useCallback(() => {
     localStorage.removeItem("adminToken");
-    localStorage.removeItem("adminRole");
     navigate("/admin/login", { replace: true });
   }, [navigate]);
 
   /* =========================
-     FETCH DASHBOARD (FIXED)
+     FETCH DASHBOARD
   ========================= */
   const fetchDashboard = useCallback(async () => {
     try {
       setError("");
-
-      // ✅ CORRECT ENDPOINT (matches ManageEnquiries)
       const res = await api.get("/admin/dashboard");
-
-
       const data = res.data || {};
 
       setDashboard({
         stats: {
-          totalUsers: data.stats?.totalUsers ?? 0,
-          totalNotices: data.stats?.totalNotices ?? 0,
-          totalCourses: data.stats?.totalCourses ?? 0,
+          admissions: data.stats?.admissions ?? 0,
+          alumni: data.stats?.alumni ?? 0,
+          careers: data.stats?.careers ?? 0,
+          grievances: data.stats?.grievances ?? 0,
+          notices: data.stats?.notices ?? 0,
+          courses: data.stats?.courses ?? 0,
         },
         recent: {
-          enquiries: data.recent?.enquiries ?? [],
-          notices: data.recent?.notices ?? [],
-          courses: data.recent?.courses ?? [],
+          admissions: data.recent?.admissions ?? [],
+          alumni: data.recent?.alumni ?? [],
+          grievances: data.recent?.grievances ?? [],
         },
       });
     } catch (err) {
-      console.error("Dashboard fetch error:", err);
-
-      if (err.response?.status === 401 || err.response?.status === 403) {
-        handleLogout();
+      console.error("Dashboard error:", err);
+      if ([401, 403].includes(err.response?.status)) {
+        handleAuthFail();
       } else {
         setError("Dashboard service unavailable");
         setDashboard(INITIAL_DASHBOARD);
@@ -71,10 +78,10 @@ export default function Dashboard() {
     } finally {
       setLoading(false);
     }
-  }, [handleLogout]);
+  }, [handleAuthFail]);
 
   /* =========================
-     INITIAL LOAD + AUTO REFRESH
+     INITIAL LOAD
   ========================= */
   useEffect(() => {
     const token = localStorage.getItem("adminToken");
@@ -88,71 +95,86 @@ export default function Dashboard() {
     return () => clearInterval(interval);
   }, [fetchDashboard, navigate]);
 
-  /* =========================
-     UI STATES
-  ========================= */
   if (loading) {
-    return <p className="p-6 text-slate-500">Loading dashboard…</p>;
+    return (
+      <div className="p-6 text-slate-500">
+        Loading dashboard…
+      </div>
+    );
   }
 
   const { stats, recent } = dashboard;
 
   return (
-    <div className="p-6 bg-slate-50 min-h-screen">
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h1 className="text-3xl font-bold">Admin Dashboard</h1>
-          <p className="text-slate-500">CampusHub overview</p>
-        </div>
-
-        <button
-          onClick={handleLogout}
-          className="flex items-center gap-2 px-5 py-2 bg-red-500 text-white rounded-full"
-        >
-          <LogOut size={16} /> Logout
-        </button>
+    <div className="space-y-10">
+      {/* HEADER */}
+      <div>
+        <h1 className="text-2xl sm:text-3xl font-bold text-slate-800">
+          Dashboard Overview
+        </h1>
+        <p className="text-sm text-slate-500 mt-1">
+          RRSIMT Management Panel
+        </p>
       </div>
 
+      {/* ERROR */}
       {error && (
-        <div className="mb-6 text-red-600 text-sm">
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md text-sm">
           {error}
           <button
             onClick={fetchDashboard}
-            className="ml-4 px-3 py-1 bg-teal-600 text-white rounded"
+            className="ml-4 underline font-semibold"
           >
             Retry
           </button>
         </div>
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-10">
-        <StatCard title="Total Users" value={stats.totalUsers} icon={<Users />} />
-        <StatCard title="Active Notices" value={stats.totalNotices} icon={<Bell />} />
-        <StatCard title="Courses Offered" value={stats.totalCourses} icon={<BookOpen />} />
+      {/* STATS */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-6">
+        <StatCard title="Admissions" value={stats.admissions} icon={<FileText />} />
+        <StatCard title="Alumni" value={stats.alumni} icon={<GraduationCap />} />
+        <StatCard title="Careers" value={stats.careers} icon={<Briefcase />} />
+        <StatCard title="Grievances" value={stats.grievances} icon={<AlertTriangle />} />
+        <StatCard title="Notices" value={stats.notices} icon={<Bell />} />
+        <StatCard title="Courses" value={stats.courses} icon={<BookOpen />} />
       </div>
 
+      {/* RECENT SECTIONS */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <ListCard title="Recent Enquiries">
-          {recent.enquiries.length === 0
+        <ListCard title="Recent Admissions">
+          {recent.admissions.length === 0
             ? <Empty />
-            : recent.enquiries.map(e => (
-                <Row key={e.id} title={e.name} subtitle={e.email} />
+            : recent.admissions.map(a => (
+                <Row
+                  key={a.id}
+                  title={a.applicant_name || a.name}
+                  subtitle={a.course}
+                />
               ))}
         </ListCard>
 
-        <ListCard title="Latest Notices">
-          {recent.notices.length === 0
+        <ListCard title="Recent Alumni Registrations">
+          {recent.alumni.length === 0
             ? <Empty />
-            : recent.notices.map(n => (
-                <Row key={n.id} title={n.title} subtitle={n.category} />
+            : recent.alumni.map(a => (
+                <Row
+                  key={a.id}
+                  title={a.name}
+                  subtitle={a.branch}
+                />
               ))}
         </ListCard>
 
-        <ListCard title="Recently Added Courses">
-          {recent.courses.length === 0
+        <ListCard title="Recent Grievances">
+          {recent.grievances.length === 0
             ? <Empty />
-            : recent.courses.map(c => (
-                <Row key={c.id} title={c.name} subtitle={c.level} />
+            : recent.grievances.map(g => (
+                <Row
+                  key={g.id}
+                  title={g.applicant_name}
+                  subtitle={g.grievance_type}
+                />
               ))}
         </ListCard>
       </div>
@@ -161,39 +183,55 @@ export default function Dashboard() {
 }
 
 /* =========================
-   COMPONENTS
+   UI COMPONENTS
 ========================= */
 
 function StatCard({ title, value, icon }) {
   return (
-    <div className="bg-white rounded-xl shadow p-6 flex justify-between items-center">
+    <div className="bg-white rounded-xl border border-slate-200 p-5 flex items-center justify-between hover:shadow transition">
       <div>
-        <p className="text-sm text-slate-500">{title}</p>
-        <p className="text-3xl font-bold">{value}</p>
+        <p className="text-xs uppercase tracking-wide text-slate-500">
+          {title}
+        </p>
+        <p className="text-3xl font-bold text-slate-800 mt-1">
+          {value}
+        </p>
       </div>
-      {icon}
+      <div className="text-slate-400">
+        {icon}
+      </div>
     </div>
   );
 }
 
 function ListCard({ title, children }) {
   return (
-    <div className="bg-white rounded-xl shadow p-6">
-      <h3 className="font-bold mb-4">{title}</h3>
-      <div className="space-y-3">{children}</div>
+    <div className="bg-white rounded-xl border border-slate-200 p-6">
+      <h3 className="font-semibold text-slate-800 mb-4">
+        {title}
+      </h3>
+      <div className="space-y-4">{children}</div>
     </div>
   );
 }
 
 function Row({ title, subtitle }) {
   return (
-    <div>
-      <p className="font-semibold">{title}</p>
-      <p className="text-xs text-slate-500">{subtitle}</p>
+    <div className="border-b last:border-b-0 pb-3 last:pb-0">
+      <p className="font-medium text-slate-800">
+        {title}
+      </p>
+      <p className="text-xs text-slate-500">
+        {subtitle}
+      </p>
     </div>
   );
 }
 
 function Empty() {
-  return <p className="text-sm italic text-slate-400">No data available</p>;
+  return (
+    <p className="text-sm text-slate-400 italic">
+      No data available
+    </p>
+  );
 }

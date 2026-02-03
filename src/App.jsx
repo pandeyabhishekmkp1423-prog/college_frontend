@@ -10,7 +10,7 @@ import Login from "./pages/Login";
 import Enquiry from "./pages/Enquiry";
 import Contact from "./pages/Contact";
 
-/* ========= FORM PAGES (LANDING PAGES) ========= */
+/* ========= FORM PAGES ========= */
 import Admission from "./pages/Admission";
 import AlumniRegister from "./pages/AlumniRegister";
 import Career from "./pages/Career";
@@ -31,6 +31,8 @@ import ManageNotices from "./pages/Admin/ManageNotices";
 import ManageGallery from "./pages/Admin/ManageGallery";
 import ManageCourses from "./pages/Admin/ManageCourses";
 import RegisteredUsers from "./pages/Admin/RegisteredUsers";
+import ManageAdmissions from "./pages/Admin/ManageAdmissions";
+import AdminAdmissionDetail from "./pages/Admin/AdminAdmissionDetail";
 
 export default function App() {
   return (
@@ -60,40 +62,40 @@ export default function App() {
         <Route path="/enquiry" element={<Enquiry />} />
         <Route path="/contact" element={<Contact />} />
 
-
-        {/* ===== FORM LANDING PAGES ===== */}
+        {/* ===== FORM ROUTES ===== */}
         <Route path="/admission" element={<Admission />} />
         <Route path="/alumni-register-form" element={<AlumniRegister />} />
         <Route path="/career" element={<Career />} />
         <Route path="/grievance" element={<Grievance />} />
-        <Route path="/applied-sciences-humanities"element={<AppliedSciences />}/>
+        <Route path="/applied-sciences-humanities" element={<AppliedSciences />} />
         <Route path="/mba" element={<MBA />} />
-        <Route path="/courses/civil-engineering"element={<CivilEngineering />}/>
+        <Route path="/courses/civil-engineering" element={<CivilEngineering />} />
         <Route path="/courses/cse" element={<CSE />} />
-        <Route path="/courses/electrical-engineering"element={<ElectricalEngineering />}/>
-        <Route path="/courses/electronics-communication"element={<ElectronicsCommunication />}/>
-        <Route path="/courses/information-technology"element={<InformationTechnology />}/>
-        <Route path="/courses/mechanical-engineering"element={<MechanicalEngineering />}/>
+        <Route path="/courses/electrical-engineering" element={<ElectricalEngineering />} />
+        <Route path="/courses/electronics-communication" element={<ElectronicsCommunication />} />
+        <Route path="/courses/information-technology" element={<InformationTechnology />} />
+        <Route path="/courses/mechanical-engineering" element={<MechanicalEngineering />} />
 
+        {/* ===== ADMIN LOGIN ===== */}
+        <Route path="/admin/login" element={<AdminLogin />} />
 
+        {/* ===== ADMIN PROTECTED ROUTES ===== */}
+        <Route element={<ProtectedAdminRoute />}>
+          <Route path="/admin" element={<AdminLayout />}>
+            <Route index element={<Navigate to="dashboard" replace />} />
+            <Route path="dashboard" element={<Dashboard />} />
 
-        {/* ===== ADMIN ROUTES (DEV ONLY) ===== */}
-        {!import.meta.env.PROD && (
-          <>
-            <Route path="/admin/login" element={<AdminLogin />} />
+            {/* ✅ ADMISSIONS */}
+            <Route path="admissions" element={<ManageAdmissions />} />
+            <Route path="admissions/:id" element={<AdminAdmissionDetail />} />
 
-            <Route element={<ProtectedAdminRoute />}>
-              <Route path="/admin" element={<AdminLayout />}>
-                <Route index element={<Navigate to="dashboard" replace />} />
-                <Route path="dashboard" element={<Dashboard />} />
-                <Route path="notices" element={<ManageNotices />} />
-                <Route path="gallery" element={<ManageGallery />} />
-                <Route path="courses" element={<ManageCourses />} />
-                <Route path="users" element={<RegisteredUsers />} />
-              </Route>
-            </Route>
-          </>
-        )}
+            {/* OTHER ADMIN */}
+            <Route path="notices" element={<ManageNotices />} />
+            <Route path="gallery" element={<ManageGallery />} />
+            <Route path="courses" element={<ManageCourses />} />
+            <Route path="users" element={<RegisteredUsers />} />
+          </Route>
+        </Route>
 
         {/* ===== FALLBACK ===== */}
         <Route path="*" element={<Navigate to="/" replace />} />

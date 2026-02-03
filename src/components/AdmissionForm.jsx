@@ -2,28 +2,46 @@ import { useState } from "react";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
 import useCaptcha from "../hooks/useCaptcha";
+import publicApi from "../services/publicApi";
 
 /* =====================================================
-   ADMISSION FORM – BORDER HIGHLIGHTED ONLY
+   ADMISSION FORM – FULL DATA CAPTURE (PRODUCTION)
 ===================================================== */
 
 export default function AdmissionForm() {
   const [formData, setFormData] = useState({});
+  const [academic, setAcademic] = useState({});
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState("");
+  const [error, setError] = useState("");
+
   const [captchaInput, setCaptchaInput] = useState("");
   const [captchaError, setCaptchaError] = useState("");
 
-  const {
-    captchaQuestion,
-    validateCaptcha,
-    regenerateCaptcha,
-  } = useCaptcha();
+  const [formKey, setFormKey] = useState(0); // ✅ NEW (forces form reset)
+
+  const { captchaQuestion, validateCaptcha, regenerateCaptcha } = useCaptcha();
+
+  /* ================= HANDLERS ================= */
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleAcademicChange = (level, field, value) => {
+    setAcademic((prev) => ({
+      ...prev,
+      [level]: {
+        ...prev[level],
+        [field]: value,
+      },
+    }));
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
+    setSuccess("");
 
     if (!validateCaptcha(captchaInput)) {
       setCaptchaError("Invalid CAPTCHA. Please try again.");
@@ -33,22 +51,58 @@ export default function AdmissionForm() {
     }
 
     setCaptchaError("");
-    alert("Form submitted successfully (frontend only)");
+    setLoading(true);
 
-    regenerateCaptcha();
-    setCaptchaInput("");
+    try {
+      await publicApi.post("/admissions", {
+        course: formData.course,
+        branch: formData.branch,
+
+        applicant_name: formData.applicant_name,
+        date_of_birth: formData.date_of_birth,
+        father_name: formData.father_name,
+        father_occupation: formData.father_occupation,
+        gender: formData.gender,
+        category: formData.category,
+
+        address: formData.address,
+        contact_number: formData.contact_number,
+        email: formData.email,
+        whatsapp_number: formData.whatsapp_number,
+
+        entrance_roll_number: formData.entrance_roll_number,
+        entrance_rank: formData.entrance_rank,
+        entrance_score: formData.entrance_score,
+
+        academic_qualifications: academic,
+        applicant_query: formData.applicant_query,
+      });
+
+      // ✅ SUCCESS FLOW
+      alert("Admission enquiry submitted successfully."); // ✅ POPUP
+
+      setFormData({});
+      setAcademic({});
+      setCaptchaInput("");
+      regenerateCaptcha();
+
+      setFormKey((prev) => prev + 1); // ✅ RESET FORM VISUALLY
+    } catch (err) {
+      setError("Submission failed. Please try again later.");
+    } finally {
+      setLoading(false);
+    }
   };
+
+  /* ================= UI ================= */
 
   return (
     <>
-      {/* ================= HEADER ================= */}
       <Navbar />
 
-      {/* ================= PAGE BODY ================= */}
       <section className="bg-slate-100 py-14">
         <div className="max-w-5xl mx-auto px-4">
 
-          {/* PAGE TITLE */}
           <div className="text-center mb-10">
             <h1 className="text-3xl md:text-4xl font-bold text-[#b11217]">
               Online Admission Enquiry Form
@@ -58,21 +112,19 @@ export default function AdmissionForm() {
             </p>
           </div>
 
-          {/* FORM CARD */}
           <form
+            key={formKey} // ✅ NEW (critical)
             onSubmit={handleSubmit}
-            className="
-              bg-white rounded-xl shadow-xl
-              border-2 border-[#b11217]/50
-              overflow-hidden
-            "
+            className="bg-white rounded-xl shadow-xl border-2 border-[#b11217]/50 overflow-hidden"
           >
 
-            {/* COURSE SELECTION */}
+            {error && <Alert color="red">{error}</Alert>}
+
+            {/* 1️⃣ COURSE SELECTION */}
             <FormSection title="Course Selection">
               <TwoCol>
                 <Field label="Select Course *">
-                  <select className="input" name="course" onChange={handleChange}>
+                  <select className="input" name="course" onChange={handleChange} required>
                     <option value="">Select</option>
                     <option value="MBA">M.B.A.</option>
                     <option value="BTECH">B.Tech.</option>
@@ -80,7 +132,7 @@ export default function AdmissionForm() {
                 </Field>
 
                 <Field label="Select Branch *">
-                  <select className="input" name="branch" onChange={handleChange}>
+                  <select className="input" name="branch" onChange={handleChange} required>
                     <option value="">Select</option>
                     <option>Civil Engineering</option>
                     <option>Computer Science & Engineering</option>
@@ -93,29 +145,29 @@ export default function AdmissionForm() {
               </TwoCol>
             </FormSection>
 
-            {/* BASIC INFORMATION */}
+            {/* 2️⃣ BASIC INFORMATION */}
             <FormSection title="Basic Information">
               <TwoCol>
                 <Field label="Applicant Name *">
-                  <input className="input" name="name" />
+                  <input className="input" name="applicant_name" onChange={handleChange} required />
                 </Field>
                 <Field label="Date of Birth *">
-                  <input className="input" type="date" name="dob" />
+                  <input className="input" type="date" name="date_of_birth" onChange={handleChange} required />
                 </Field>
               </TwoCol>
 
               <TwoCol>
                 <Field label="Father's Name *">
-                  <input className="input" name="father_name" />
+                  <input className="input" name="father_name" onChange={handleChange} required />
                 </Field>
                 <Field label="Father's Occupation">
-                  <input className="input" name="father_occupation" />
+                  <input className="input" name="father_occupation" onChange={handleChange} />
                 </Field>
               </TwoCol>
 
               <TwoCol>
                 <Field label="Gender *">
-                  <select className="input" name="gender">
+                  <select className="input" name="gender" onChange={handleChange} required>
                     <option value="">Select</option>
                     <option>Male</option>
                     <option>Female</option>
@@ -123,7 +175,7 @@ export default function AdmissionForm() {
                 </Field>
 
                 <Field label="Category *">
-                  <select className="input" name="category">
+                  <select className="input" name="category" onChange={handleChange} required>
                     <option value="">Select</option>
                     <option>GEN</option>
                     <option>OBC</option>
@@ -135,63 +187,59 @@ export default function AdmissionForm() {
               </TwoCol>
             </FormSection>
 
-            {/* CONTACT INFORMATION */}
+            {/* 3️⃣ CONTACT INFORMATION */}
             <FormSection title="Contact Information">
               <Field label="Postal Address *">
-                <input className="input" name="address" />
+                <input className="input" name="address" onChange={handleChange} required />
               </Field>
 
               <ThreeCol>
                 <Field label="Contact Number *">
-                  <input className="input" />
+                  <input className="input" name="contact_number" onChange={handleChange} required />
                 </Field>
                 <Field label="Email Address *">
-                  <input className="input" type="email" />
+                  <input className="input" type="email" name="email" onChange={handleChange} required />
                 </Field>
                 <Field label="WhatsApp Number *">
-                  <input className="input" />
+                  <input className="input" name="whatsapp_number" onChange={handleChange} required />
                 </Field>
               </ThreeCol>
             </FormSection>
 
-            {/* ENTRANCE INFORMATION */}
+            {/* 4️⃣ ENTRANCE DETAILS */}
             <FormSection title="Entrance Examination Details">
               <TwoCol>
                 <Field label="JEE / CUET Roll Number">
-                  <input className="input" />
+                  <input className="input" name="entrance_roll_number" onChange={handleChange} />
                 </Field>
                 <Field label="JEE / CUET Rank">
-                  <input className="input" />
+                  <input className="input" name="entrance_rank" onChange={handleChange} />
                 </Field>
               </TwoCol>
 
-              <Field label="Score / Percentile (Optional)">
-                <input className="input" />
+              <Field label="Score / Percentile">
+                <input className="input" name="entrance_score" onChange={handleChange} />
               </Field>
             </FormSection>
 
-            {/* ACADEMIC QUALIFICATION */}
+            {/* 5️⃣ ACADEMIC QUALIFICATIONS */}
             <FormSection title="Academic Qualifications">
-              <AcademicTable />
+              <AcademicTable onChange={handleAcademicChange} />
             </FormSection>
 
-            {/* QUERY */}
+            {/* 6️⃣ APPLICANT QUERY */}
             <FormSection title="Applicant Query">
               <textarea
                 rows="4"
                 className="input w-full"
-                placeholder="Write your query here..."
+                name="applicant_query"
+                onChange={handleChange}
               />
             </FormSection>
 
-            {/* CAPTCHA (UI UNCHANGED) */}
+            {/* 7️⃣ VERIFICATION */}
             <FormSection title="Verification">
-              <div
-                className="
-                  border-2 border-dashed border-[#b11217]/60
-                  rounded-md p-4 text-center text-slate-600 bg-slate-50
-                "
-              >
+              <div className="border-2 border-dashed border-[#b11217]/60 rounded-md p-4 text-center">
                 <div className="font-semibold mb-2 text-[#b11217]">
                   {captchaQuestion}
                 </div>
@@ -205,20 +253,18 @@ export default function AdmissionForm() {
                 />
 
                 {captchaError && (
-                  <p className="text-red-600 text-sm mt-2">
-                    {captchaError}
-                  </p>
+                  <p className="text-red-600 text-sm mt-2">{captchaError}</p>
                 )}
               </div>
             </FormSection>
 
-            {/* SUBMIT */}
             <div className="bg-slate-50 px-6 py-6 border-t-2 border-[#b11217]/30">
               <button
                 type="submit"
+                disabled={loading}
                 className="w-full bg-[#b11217] text-white py-3 rounded-md font-semibold"
               >
-                Submit Admission Enquiry
+                {loading ? "Submitting..." : "Submit Admission Enquiry"}
               </button>
             </div>
 
@@ -226,13 +272,20 @@ export default function AdmissionForm() {
         </div>
       </section>
 
-      {/* ================= FOOTER ================= */}
       <Footer />
     </>
   );
 }
 
 /* ================= HELPERS ================= */
+
+function Alert({ color, children }) {
+  return (
+    <div className={`bg-${color}-100 text-${color}-700 p-4 text-center`}>
+      {children}
+    </div>
+  );
+}
 
 function FormSection({ title, children }) {
   return (
@@ -248,9 +301,7 @@ function FormSection({ title, children }) {
 function Field({ label, children }) {
   return (
     <div className="flex flex-col gap-1">
-      <label className="text-sm font-semibold text-slate-700">
-        {label}
-      </label>
+      <label className="text-sm font-semibold text-slate-700">{label}</label>
       {children}
     </div>
   );
@@ -264,30 +315,69 @@ function ThreeCol({ children }) {
   return <div className="grid md:grid-cols-3 gap-6">{children}</div>;
 }
 
-function AcademicTable() {
-  const rows = ["High School", "Intermediate", "Graduation", "Post Graduation", "Other"];
+function AcademicTable({ onChange }) {
+  const rows = [
+    { label: "High School", key: "high_school", required: true },
+    { label: "Intermediate", key: "intermediate", required: true },
+    { label: "Graduation", key: "graduation" },
+    { label: "Post Graduation", key: "post_graduation" },
+    { label: "Other / Diploma", key: "other" },
+  ];
 
   return (
     <div className="overflow-x-auto border-2 border-slate-400 rounded-md">
       <table className="w-full text-sm border-collapse">
         <thead className="bg-slate-200 border-b-2 border-slate-400">
           <tr>
-            <th className="border p-2">Course</th>
+            <th className="border p-2">Level</th>
             <th className="border p-2">Board / University</th>
             <th className="border p-2">Year</th>
             <th className="border p-2">Stream</th>
             <th className="border p-2">% / Division</th>
           </tr>
         </thead>
+
         <tbody>
-          {rows.map((r) => (
-            <tr key={r}>
-              <td className="border p-2 font-medium">{r}</td>
-              {[1, 2, 3, 4].map((i) => (
-                <td key={i} className="border p-2">
-                  <input className="w-full border border-slate-400 rounded px-2 py-1" />
-                </td>
-              ))}
+          {rows.map(({ label, key, required }) => (
+            <tr key={key}>
+              <td className="border p-2 font-medium">
+                {label} {required && <span className="text-red-600">*</span>}
+              </td>
+
+              <td className="border p-2">
+                <input
+                  required={required}
+                  placeholder="e.g. CBSE / ICSE / AKTU"
+                  className="w-full border border-slate-400 rounded px-2 py-1"
+                  onChange={(e) => onChange(key, "board", e.target.value)}
+                />
+              </td>
+
+              <td className="border p-2">
+                <input
+                  required={required}
+                  placeholder="e.g. 2021"
+                  className="w-full border border-slate-400 rounded px-2 py-1"
+                  onChange={(e) => onChange(key, "year", e.target.value)}
+                />
+              </td>
+
+              <td className="border p-2">
+                <input
+                  placeholder="e.g. Science / PCM"
+                  className="w-full border border-slate-400 rounded px-2 py-1"
+                  onChange={(e) => onChange(key, "stream", e.target.value)}
+                />
+              </td>
+
+              <td className="border p-2">
+                <input
+                  required={required}
+                  placeholder="e.g. 85"
+                  className="w-full border border-slate-400 rounded px-2 py-1"
+                  onChange={(e) => onChange(key, "percentage", e.target.value)}
+                />
+              </td>
             </tr>
           ))}
         </tbody>

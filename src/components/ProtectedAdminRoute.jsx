@@ -4,9 +4,8 @@ export default function ProtectedAdminRoute() {
   const token = localStorage.getItem("adminToken");
   const role = localStorage.getItem("adminRole");
 
-  // 🔒 STRICT CHECK
+  // 🔒 Strict but correct check
   if (!token || role !== "admin") {
-    // clean invalid state
     localStorage.removeItem("adminToken");
     localStorage.removeItem("adminRole");
     return <Navigate to="/admin/login" replace />;
