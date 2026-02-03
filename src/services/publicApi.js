@@ -3,17 +3,18 @@ import axios from "axios";
 /**
  * Public API client
  * Works for:
- * - Local (localhost)
+ * - Localhost
  * - Render backend
  * - Vercel frontend
- * - Future Hostinger deployment
+ * - Future production deployments
  */
 
 const publicApi = axios.create({
-  baseURL: `${import.meta.env.VITE_API_BASE_URL}/api`,
+  // MUST match api.js exactly
+  baseURL: `${import.meta.env.VITE_API_URL}/api`,
 });
 
-// Optional: basic response error logging (helps diagnosis)
+// Response error logging (safe for production)
 publicApi.interceptors.response.use(
   (response) => response,
   (error) => {
