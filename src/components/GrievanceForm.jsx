@@ -2,6 +2,8 @@ import { useState } from "react";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
 import useCaptcha from "../hooks/useCaptcha";
+import api from "../services/api";
+
 
 /* =====================================================
    GRIEVANCE REDRESSAL FORM – LANDING PAGE STYLE
@@ -22,23 +24,29 @@ export default function GrievanceForm() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  const handleSubmit = async (e) => {
+  e.preventDefault();
 
-    if (!validateCaptcha(captchaInput)) {
-      setCaptchaError("Invalid CAPTCHA. Please try again.");
-      regenerateCaptcha();
-      setCaptchaInput("");
-      return;
-    }
-
-    setCaptchaError("");
-    alert("Grievance submitted successfully (frontend only)");
-
+  if (!validateCaptcha(captchaInput)) {
+    setCaptchaError("Invalid CAPTCHA. Please try again.");
     regenerateCaptcha();
     setCaptchaInput("");
-  };
+    return;
+  }
 
+  try {
+    await api.post("/grievances", formData);
+
+    alert("Grievance submitted successfully");
+
+    setFormData({});
+    regenerateCaptcha();
+    setCaptchaInput("");
+  } catch (err) {
+    console.error("GRIEVANCE SUBMIT ERROR:", err);
+    alert("Submission failed");
+  }
+};
   return (
     <>
       {/* ================= HEADER ================= */}

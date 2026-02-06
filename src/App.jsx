@@ -33,6 +33,12 @@ import ManageCourses from "./pages/Admin/ManageCourses";
 import RegisteredUsers from "./pages/Admin/RegisteredUsers";
 import ManageAdmissions from "./pages/Admin/ManageAdmissions";
 import AdminAdmissionDetail from "./pages/Admin/AdminAdmissionDetail";
+import ManageAlumni from "./pages/Admin/ManageAlumni";
+import AlumniDetail from "./pages/Admin/AlumniDetail";
+import AdminCareerDetail from "./pages/Admin/AdminCareerDetail";
+import ManageCareers from "./pages/Admin/ManageCareers";
+import ManageGrievances from "./pages/Admin/ManageGrievances";
+import AdminGrievanceDetail from "./pages/Admin/AdminGrievanceDetail";
 
 export default function App() {
   return (
@@ -88,6 +94,15 @@ export default function App() {
             {/* ✅ ADMISSIONS */}
             <Route path="admissions" element={<ManageAdmissions />} />
             <Route path="admissions/:id" element={<AdminAdmissionDetail />} />
+            <Route path="alumni" element={<ManageAlumni />} />
+            <Route path="alumni/:id" element={<AlumniDetail />} />
+
+            <Route path="careers" element={<ManageCareers />} />
+            <Route path="careers/:id" element={<AdminCareerDetail />} />
+            <Route path="/admin/grievances" element={<ManageGrievances />} />
+            <Route path="/admin/grievances/:id" element={<AdminGrievanceDetail />} />
+
+
 
             {/* OTHER ADMIN */}
             <Route path="notices" element={<ManageNotices />} />

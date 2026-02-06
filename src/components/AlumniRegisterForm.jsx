@@ -1,4 +1,5 @@
 import { useState } from "react";
+import api from "../services/api";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
 import useCaptcha from "../hooks/useCaptcha";
@@ -11,6 +12,8 @@ export default function AlumniRegisterForm() {
   const [formData, setFormData] = useState({});
   const [captchaInput, setCaptchaInput] = useState("");
   const [captchaError, setCaptchaError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
 
   const {
     captchaQuestion,
@@ -22,7 +25,7 @@ export default function AlumniRegisterForm() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!validateCaptcha(captchaInput)) {
@@ -33,22 +36,32 @@ export default function AlumniRegisterForm() {
     }
 
     setCaptchaError("");
-    alert("Alumni Registration submitted (frontend only)");
+    setLoading(true);
+    setSuccessMessage("");
 
-    regenerateCaptcha();
-    setCaptchaInput("");
+    try {
+      // ✅ THIS IS THE ONLY IMPORTANT LINE
+      await api.post("/alumni", formData);
+
+      setSuccessMessage("Alumni Registration submitted successfully!");
+      setFormData({});
+      regenerateCaptcha();
+      setCaptchaInput("");
+    } catch (error) {
+      console.error("ALUMNI SUBMIT ERROR:", error);
+      setSuccessMessage("Submission failed. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <>
-      {/* ================= HEADER ================= */}
       <Navbar />
 
-      {/* ================= PAGE BODY ================= */}
       <section className="bg-slate-100 py-14">
         <div className="max-w-5xl mx-auto px-4">
 
-          {/* PAGE TITLE */}
           <div className="text-center mb-10">
             <h1 className="text-3xl md:text-4xl font-bold text-[#b11217]">
               Alumni Register Form
@@ -58,14 +71,15 @@ export default function AlumniRegisterForm() {
             </p>
           </div>
 
-          {/* FORM CARD */}
+          {successMessage && (
+            <div className="mb-6 text-center text-green-600 font-semibold">
+              {successMessage}
+            </div>
+          )}
+
           <form
             onSubmit={handleSubmit}
-            className="
-              bg-white rounded-xl shadow-xl
-              border-2 border-[#b11217]/50
-              overflow-hidden
-            "
+            className="bg-white rounded-xl shadow-xl border-2 border-[#b11217]/50 overflow-hidden"
           >
 
             {/* BASIC DETAILS */}
@@ -76,30 +90,17 @@ export default function AlumniRegisterForm() {
                 </Field>
 
                 <Field label="Year of Qualification *">
-                  <input
-                    className="input"
-                    name="year_of_qua"
-                    onChange={handleChange}
-                  />
+                  <input className="input" name="year_of_qua" onChange={handleChange} />
                 </Field>
               </TwoCol>
 
               <TwoCol>
                 <Field label="Branch *">
-                  <input
-                    className="input"
-                    name="branch"
-                    onChange={handleChange}
-                  />
+                  <input className="input" name="branch" onChange={handleChange} />
                 </Field>
 
                 <Field label="Email *">
-                  <input
-                    type="email"
-                    className="input"
-                    name="email"
-                    onChange={handleChange}
-                  />
+                  <input type="email" className="input" name="email" onChange={handleChange} />
                 </Field>
               </TwoCol>
             </FormSection>
@@ -135,43 +136,24 @@ export default function AlumniRegisterForm() {
                 </Field>
 
                 <Field label="Name of Employing Company">
-                  <input
-                    className="input"
-                    name="emp_comp"
-                    onChange={handleChange}
-                  />
+                  <input className="input" name="emp_comp" onChange={handleChange} />
                 </Field>
               </TwoCol>
 
               <TwoCol>
                 <Field label="Designation">
-                  <input
-                    className="input"
-                    name="designation"
-                    onChange={handleChange}
-                  />
+                  <input className="input" name="designation" onChange={handleChange} />
                 </Field>
 
                 <Field label="Date of Joining">
-                  <input
-                    type="date"
-                    className="input"
-                    name="doj"
-                    onChange={handleChange}
-                  />
+                  <input type="date" className="input" name="doj" onChange={handleChange} />
                 </Field>
               </TwoCol>
             </FormSection>
 
-            {/* CAPTCHA (UI UNCHANGED) */}
+            {/* CAPTCHA */}
             <FormSection title="Verification">
-              <div
-                className="
-                  border-2 border-dashed border-[#b11217]/60
-                  rounded-md p-4 text-center
-                  text-slate-600 bg-slate-50
-                "
-              >
+              <div className="border-2 border-dashed border-[#b11217]/60 rounded-md p-4 text-center text-slate-600 bg-slate-50">
                 <div className="font-semibold mb-2 text-[#b11217]">
                   {captchaQuestion}
                 </div>
@@ -196,12 +178,10 @@ export default function AlumniRegisterForm() {
             <div className="bg-slate-50 px-6 py-6 border-t-2 border-[#b11217]/30">
               <button
                 type="submit"
-                className="
-                  w-full bg-[#b11217] text-white
-                  py-3 rounded-md font-semibold
-                "
+                disabled={loading}
+                className="w-full bg-[#b11217] text-white py-3 rounded-md font-semibold"
               >
-                Submit Alumni Registration
+                {loading ? "Submitting..." : "Submit Alumni Registration"}
               </button>
             </div>
 
@@ -209,13 +189,12 @@ export default function AlumniRegisterForm() {
         </div>
       </section>
 
-      {/* ================= FOOTER ================= */}
       <Footer />
     </>
   );
 }
 
-/* ================= HELPERS (SAME AS ADMISSION) ================= */
+/* ================= HELPERS ================= */
 
 function FormSection({ title, children }) {
   return (
